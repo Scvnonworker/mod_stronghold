@@ -1,6 +1,8 @@
 this.stronghold_screen_stash_module <-  this.inherit("scripts/ui/screens/stronghold/modules/stronghold_screen_module" , {
 	m = {
-		InventoryFilter = this.Const.Items.ItemFilter.All
+		// The data helper resolves 0 to the current All mask when displaying items.
+		// Mods such as Legends can extend item types after this module is created.
+		InventoryFilter = 0
 	},
 
 	function getStash()
