@@ -676,8 +676,13 @@ StrongholdScreenStashModule.prototype.createItemSlots = function (_owner, _size,
 
 
 
+// Resolve at call time: Legends adds this method in a later UI hook.
+StrongholdScreenStashModule.prototype.assignItemToSlot = function(_owner, _slot, _item)
+{
+    return WorldTownScreenShopDialogModule.prototype.assignItemToSlot.call(this, _owner, _slot, _item);
+};
+
 var copyFunctionList = [
-	"assignItemToSlot",
 	"isStashSpaceLeft",
 	"getStashStatistics",
 	"notifyBackendSwapItem",
