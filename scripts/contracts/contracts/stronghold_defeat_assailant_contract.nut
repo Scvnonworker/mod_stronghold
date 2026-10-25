@@ -40,15 +40,30 @@ this.stronghold_defeat_assailant_contract <- this.inherit("scripts/contracts/con
 		return "ui/banners/factions/banner_06s"
 	}
 
+	function updateDefenseObjectives( _notify = false )
+	{
+		// AttacksRemaining counts waves not yet spawned. Include the active wave.
+		local remaining = this.m.AttacksRemaining;
+		if (this.m.HasSpawnedUnit && this.m.Target != null && !this.m.Target.isNull())
+		{
+			remaining++;
+		}
+		this.m.BulletpointsObjectives = [
+			format("Defend against %i more %s", remaining, remaining == 1 ? "attack." : "attacks.")
+		];
+		if (_notify)
+		{
+			this.World.State.getWorldScreen().updateContract(this);
+		}
+	}
+
 	function createStates()
 	{
 		this.m.States.push({
 			ID = "Running",
 			function start()
 			{
-				this.Contract.m.BulletpointsObjectives = [
-					format("Defend against %i more %s", this.Contract.m.AttacksRemaining, this.Contract.m.AttacksRemaining == 1 ? "attack." : "attacks.")
-				];
+				this.Contract.updateDefenseObjectives();
 			}
 			function update()
 			{
@@ -140,9 +155,7 @@ this.stronghold_defeat_assailant_contract <- this.inherit("scripts/contracts/con
 			{
 				
 				this.Text = format("[img]gfx/ui/events/event_31.png[/img]The construction of your %s has begun. Your hired engineers expect that this will take %i %s, during which you won't be able to enter all its buildings and locations. The ruckus has drawn the attention of nearby enemies, and you can expect them to send an attack party within the next day.", ::Stronghold.BaseTiers[this.Contract.m.TargetLevel].Name, this.Contract.m.TargetLevel, this.Contract.m.TargetLevel == 1 ? " day" : " days") ;
-				this.Contract.m.BulletpointsObjectives = [
-					format("Defend against %i more %s", this.Contract.m.AttacksRemaining, this.Contract.m.AttacksRemaining == 1 ? "attack." : "attacks.")
-				];
+				this.Contract.updateDefenseObjectives();
 			}
 		});
 		this.m.Screens.push({
@@ -168,8 +181,17 @@ this.stronghold_defeat_assailant_contract <- this.inherit("scripts/contracts/con
 			ShowDifficulty = false,
 			function start()
 			{
-				this.Contract.spawnNewAttackers()
-				this.Text = "[img]gfx/ui/events/event_10.png[/img]Your scouts have informed you that the enemies are imminent, hailing from the " + this.Const.Strings.Direction8[this.Contract.m.Home.getTile().getDirection8To(this.Contract.m.Target.getTile())]
+				// Loading a contract restarts its last screen, even after it was dismissed.
+				if (!this.Contract.m.HasSpawnedUnit && this.Contract.m.AttacksRemaining > 0)
+				{
+					this.Contract.spawnNewAttackers();
+				}
+				this.Contract.updateDefenseObjectives(true);
+				this.Text = "[img]gfx/ui/events/event_10.png[/img]Your scouts have informed you that the enemies are imminent.";
+				if (this.Contract.m.Target != null && !this.Contract.m.Target.isNull())
+				{
+					this.Text = "[img]gfx/ui/events/event_10.png[/img]Your scouts have informed you that the enemies are imminent, hailing from the " + this.Const.Strings.Direction8[this.Contract.m.Home.getTile().getDirection8To(this.Contract.m.Target.getTile())];
+				}
 			}
 		});
 		this.m.Screens.push({
@@ -197,8 +219,7 @@ this.stronghold_defeat_assailant_contract <- this.inherit("scripts/contracts/con
 			ShowDifficulty = false,
 			function start()
 			{
-				this.Contract.m.BulletpointsObjectives[0] = format("Defend against %i more %s", this.Contract.m.AttacksRemaining, this.Contract.m.AttacksRemaining == 1 ? "attack." : "attacks.")
-				this.World.State.getWorldScreen().updateContract(this.Contract);
+				this.Contract.updateDefenseObjectives(true);
 			}
 		});
 		this.m.Screens.push({
