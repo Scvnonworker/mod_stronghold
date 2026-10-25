@@ -4,7 +4,9 @@
 	Version = "2.18.1"
 };
 ::mods_registerMod(::Stronghold.ID, ::Stronghold.Version, ::Stronghold.Name);
-::mods_queue(::Stronghold.ID, "mod_msu", function()
+// Legends replaces attached_location.onDeserialize. Wrap it after its hooks register.
+// The ordering constraint is optional: Stronghold still works without Legends.
+::mods_queue(::Stronghold.ID, "mod_msu, >mod_legends", function()
 {	
 	::Stronghold.Mod <- ::MSU.Class.Mod(::Stronghold.ID, ::Stronghold.Version, ::Stronghold.Name);
 	::Stronghold.Mod.Registry.addModSource(::MSU.System.Registry.ModSourceDomain.GitHubTags, "https://github.com/TaroEld/mod_stronghold/");
